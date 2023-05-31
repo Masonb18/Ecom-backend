@@ -4,27 +4,67 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // The `/api/products` endpoint
 
 // get all products
+// find all products
+// be sure to include its associated Category and Tag data
 router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
+  Product.findAll({
+    include: {
+      model: Category,
+      model: Tag,
+      model: ProductTag
+    },
+   })
+   .then((products) => {
+    res.json(products);
+   })
+   .catch((err)=> {
+    console.error('Error retrieiving products', err);
+    res.status(500).json({ error: 'Failed to retrieve products'});
+  })
 });
 
 // get one product
+// find a single product by its `id`
+// be sure to include its associated Category and Tag data
 router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+  const productId = req.params.id;
+  Product.findByPk(productId, {
+  })
+  .then((product) => {
+    if(!product) {
+      res.status(404).json({ error: 'Product not found'});
+    } else {
+      res.json(product);
+    }
+  })
+  .catch((err) => {
+    console.error('Error retrieving product:', err);
+    res.status(500).json({ error: 'failed to retrieve product'});
+  })
 });
 
 // create new product
 router.post('/', (req, res) => {
-  /* req.body should look like this...
-    {
-      product_name: "Basketball",
-      price: 200.00,
-      stock: 3,
-      tagIds: [1, 2, 3, 4]
-    }
-  */
+   const { prduct_name, price, stock, tagIds} = req.body;
+   Product.create(
+     {
+       product_name: "Book",
+       price: 25.00,
+       stock: 3,
+       tagIds: tagIds.map((tagId)=> ({id: tagId}))
+     }, {
+      include: Tag
+     })
+     .then((product)=> {
+      res.join(product);
+     })
+     .catch((err)=> {
+      console.error('Error creating product:', err);
+      res.status(500).json({ error: 'Failed to create product' })
+     })
+     
+    
+
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
@@ -92,8 +132,24 @@ router.put('/:id', (req, res) => {
     });
 });
 
+// delete one product by its `id` value
 router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
+  const productId = req.params.id;
+
+  Product.destroy({
+    where: {
+      id: productId
+    },
+  })
+  .then ((rowsDeleted)=> {
+    if (rowsDeleted === 0) {
+      res.status(404).json({ error: 'Failed to delete product'})
+    }
+  })
+  .catch((err) => {
+    console.error('Error deleteing product', err);
+    res.status(500).json({ error: 'Failed to delete product'});
+  })
 });
 
 module.exports = router;
