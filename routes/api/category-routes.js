@@ -60,7 +60,7 @@ router.put('/:id', (req, res) => {
 
   Category.update({ category_name }, {
     where: {
-      id: categoryId;
+      id: categoryId
     }
   })
   .then((rowsUpdated)=> {
