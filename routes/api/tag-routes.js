@@ -57,46 +57,21 @@ router.post('/', (req, res) => {
     })
 });
 
-router.put('/:id', (req, res) => {
-  const tagID = req.params.id;
-  const { tag_name } = req.body;
-
-  Tag.update({ tag_name }, {
-    where: {
-      id: tagID
-    }
-  })
-  .then((rowsUpdated)=> {
-    if (rowsUpdated[0]=== 0) {
-      res.status(404).json({error: 'Tag not found' });
-    }else {
-      res.json({ message: 'Tag updated successfully' });
-    }
-  })
-  .catch((err) => {
-    console.error('Error retriving the tag', err);
-    res.status(500).json({ error: 'Failed to retrieve tag'});
-  })
-});
 
 // delete on tag by its `id` value
 router.delete('/:id', (req, res) => {
-  const tagId = req.params.id;
-
-  Category.destory({
-    where: {
-      id: tagId
-    },
-  })
-  .then ((rowsDeleted)=> {
-    if (rowsDeleted === 0) {
-      res.status(404).json({ error: 'Failed to delete category'});
+  try {
+    const tagData = Tag.destroy({
+      where: { id: req.params.id }
+    });
+    if (!tagData) {
+      res.status(404).json({ message: 'No tags with this id!' });
+      return;
     }
-  })
-  .catch((err) => {
-    console.error('Error deleteing tag:', err);
-    res.status(500).json({ error: 'Failed to delete tag' });
-  });
+    res.status(200).json(tagData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;

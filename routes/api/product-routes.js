@@ -44,24 +44,17 @@ router.get('/:id', (req, res) => {
 });
 
 // create new product
-router.post('/', (req, res) => {
-   const { prduct_name, price, stock, tagIds} = req.body;
-   Product.create(
-     {
-       product_name: "Book",
-       price: 25.00,
-       stock: 3,
-       tagIds: tagIds.map((tagId)=> ({id: tagId}))
-     }, {
-      include: Tag
-     })
-     .then((product)=> {
-      res.join(product);
-     })
-     .catch((err)=> {
-      console.error('Error creating product:', err);
-      res.status(500).json({ error: 'Failed to create product' })
-     })
+router.post('/', (req, res)=> {
+  req.body = {
+    product_name: req.body.product_name,
+  }
+  try {
+    const productData = Product.create(req.body);
+    res.status(200).json(productData);
+  } catch (err){
+    res.status(400).json(err);
+  }
+});
      
     
 
@@ -85,7 +78,7 @@ router.post('/', (req, res) => {
       console.log(err);
       res.status(400).json(err);
     });
-});
+
 
 // update product
 router.put('/:id', (req, res) => {

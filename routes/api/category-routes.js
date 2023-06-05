@@ -41,59 +41,44 @@ router.get('/:id', (req, res) => {
 });
 
 // create a new category
-router.post('/', (req, res) => {
-  const { category_name }= req.body;
-  Category.create({ category_name })
-  .then((category)=> {
-    res.json(category);
-  })
-  .catch((err) => {
-    console.error('Error creating category:', err);
-    res.status(500).json({ error: 'Failed to create category'});
-  })
+router.post('/', (req, res)=> {
+  req.body = {
+    category_name: req.body.category_name,
+  }
+  try {
+    const categoryData = Category.create(req.body);
+    res.status(200).json(categoryData);
+  } catch (err){
+    res.status(400).json(err);
+  }
 });
 
 // update a category by its `id` value
-router.put('/:id', (req, res) => {
-  const categoryId = req.params.id;
-  const { category_name }= req.body;
-
-  Category.update({ category_name }, {
-    where: {
-      id: categoryId
-    }
-  })
-  .then((rowsUpdated)=> {
-    if (rowsUpdated[0]=== 0) {
-      res.status(404).json({error: 'Category not found' });
-    }else {
-      res.json({ message: 'Category updated successfully' });
-    }
-  })
-  .catch((err) => {
-    console.error('Error retriving the category', err);
-    res.status(500).json({ error: 'Failed to retrieve category'});
-  })
+router.post('/', async (req, res) => {
+  try {
+    const cateogryData = await Category.create(req.body);
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(400).json(err);
+  }
 });
 
 // delete a category by its `id` value
 router.delete('/:id', (req, res) => {
-  const categoryId = req.params.id;
-
-  Category.destory({
-    where: {
-      id: categoryId
-    },
-  })
-  .then ((rowsDeleted)=> {
-    if (rowsDeleted === 0) {
-      res.status(404).json({ error: 'Failed to delete category'});
-    }
-  })
-  .catch((err) => {
-    console.error('Error deleteing category:', err);
-    res.status(500).json({ error: 'Failed to delete category' });
-  });
+  try{
+    const categoryData = Category.destory({
+      where: {
+        id: categoryId
+      },
+    })
+ if (!categoryData) {
+  res.status(400).json({message: 'No category with this id'});
+  return;
+ }
+ res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
